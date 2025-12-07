@@ -1,0 +1,10 @@
+services:
+  jellyfin_arr_crosschecker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./credentials.yaml:/app/credentials.yaml
