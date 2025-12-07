@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arr Cleaner - Watch Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .user-section {
+            margin-bottom: 30px;
+        }
+
+        .user-section h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .user-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .user-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .link-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .link-jellyfin {
+            background: #00a4dc;
+            color: white;
+        }
+
+        .link-jellyfin:hover {
+            background: #0088bb;
+        }
+
+        .link-radarr {
+            background: #ffc230;
+            color: #333;
+        }
+
+        .link-radarr:hover {
+            background: #e6af2a;
+        }
+
+        .link-sonarr {
+            background: #35c5f4;
+            color: white;
+        }
+
+        .link-sonarr:hover {
+            background: #2bb0db;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:hover {
+            border-color: #667eea;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .clear-filter {
+            padding: 8px 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .clear-filter:hover {
+            background: #d32f2f;
+        }
+
+        .hidden-row {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📺 Arr Cleaner - Watch Report</h1>
+
+        {% if report %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="number">{{ report.users|length }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Movies (All Users)</h3>
+                <div class="number">{{ report.movies_watched_by_all|length }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Movies (Some Users)</h3>
+                <div class="number">{{ report.movies_watched_by_some|length }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Series Completed (All)</h3>
+                <div class="number">{{ report.series_fully_watched_by_all|length }}</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Content Overview</h2>
+            <div class="chart-wrapper">
+                <canvas id="contentChart"></canvas>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3 style="color: #667eea; margin-bottom: 15px;">Filter Content</h3>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="userFilter">User:</label>
+                    <select id="userFilter" onchange="filterContent()">
+                        <option value="">All Users</option>
+                        {% for user in report.users %}
+                        <option value="{{ user.username }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="watchedFilter">Status:</label>
+                    <select id="watchedFilter" onchange="filterContent()">
+                        <option value="">Any</option>
+                        <option value="watched">Has Watched</option>
+                        <option value="not-watched">Has Not Watched</option>
+                    </select>
+                </div>
+                <button class="clear-filter" onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎬 Movies Watched by All Users</h2>
+            {% if report.movies_watched_by_all %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Links</th>
+                        <th>TMDB ID</th>
+                        <th>In Radarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in report.movies_watched_by_all %}
+                    <tr class="content-row" data-users="{{ movie.watched_by_users|join(',') }}">
+                        <td>{{ movie.title }}</td>
+                        <td>{{ movie.year or 'N/A' }}</td>
+                        <td>
+                            <div class="links">
+                                {% if movie.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ movie.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if movie.tmdb_id and report.radarr_url %}
+                                <a href="{{ report.radarr_url }}/movie/{{ movie.tmdb_id }}" target="_blank" class="link-button link-radarr">Radarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ movie.tmdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if movie.in_radarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No movies watched by all users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>🎬 Movies Watched by Some Users</h2>
+            {% if report.movies_watched_by_some %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Watched By</th>
+                        <th>Links</th>
+                        <th>TMDB ID</th>
+                        <th>In Radarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in report.movies_watched_by_some %}
+                    <tr class="content-row" data-users="{{ movie.watched_by_users|join(',') }}">
+                        <td>{{ movie.title }}</td>
+                        <td>{{ movie.year or 'N/A' }}</td>
+                        <td>
+                            <div class="user-badges">
+                                {% for user in movie.watched_by_users %}
+                                <span class="user-badge">{{ user }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="links">
+                                {% if movie.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ movie.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if movie.tmdb_id and report.radarr_url %}
+                                <a href="{{ report.radarr_url }}/movie/{{ movie.tmdb_id }}" target="_blank" class="link-button link-radarr">Radarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ movie.tmdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if movie.in_radarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No movies watched by some users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>📺 Series Fully Watched by All Users</h2>
+            {% if report.series_fully_watched_by_all %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Episodes</th>
+                        <th>Links</th>
+                        <th>TVDB ID</th>
+                        <th>In Sonarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for series in report.series_fully_watched_by_all %}
+                    <tr class="content-row" data-users="{{ series.watched_by_users|join(',') }}">
+                        <td>{{ series.title }}</td>
+                        <td>{{ series.year or 'N/A' }}</td>
+                        <td>{{ series.watched_episodes }}/{{ series.total_episodes }}</td>
+                        <td>
+                            <div class="links">
+                                {% if series.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ series.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if series.sonarr_title_slug and report.sonarr_url %}
+                                <a href="{{ report.sonarr_url }}/series/{{ series.sonarr_title_slug }}" target="_blank" class="link-button link-sonarr">Sonarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ series.tvdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if series.in_sonarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No series fully watched by all users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>📺 Series Fully Watched by Some Users</h2>
+            {% if report.series_fully_watched_by_some %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Watched By</th>
+                        <th>Episodes</th>
+                        <th>Links</th>
+                        <th>TVDB ID</th>
+                        <th>In Sonarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for series in report.series_fully_watched_by_some %}
+                    <tr class="content-row" data-users="{{ series.watched_by_users|join(',') }}">
+                        <td>{{ series.title }}</td>
+                        <td>{{ series.year or 'N/A' }}</td>
+                        <td>
+                            <div class="user-badges">
+                                {% for user in series.watched_by_users %}
+                                <span class="user-badge">{{ user }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>{{ series.watched_episodes }}/{{ series.total_episodes }}</td>
+                        <td>
+                            <div class="links">
+                                {% if series.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ series.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if series.sonarr_title_slug and report.sonarr_url %}
+                                <a href="{{ report.sonarr_url }}/series/{{ series.sonarr_title_slug }}" target="_blank" class="link-button link-sonarr">Sonarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ series.tvdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if series.in_sonarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No series fully watched by some users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>📺 Series Partially Watched by All Users</h2>
+            {% if report.series_partially_watched_by_all %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Progress</th>
+                        <th>Episodes</th>
+                        <th>Links</th>
+                        <th>TVDB ID</th>
+                        <th>In Sonarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for series in report.series_partially_watched_by_all %}
+                    <tr class="content-row" data-users="{{ series.watched_by_users|join(',') }}">
+                        <td>{{ series.title }}</td>
+                        <td>{{ series.year or 'N/A' }}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (series.watched_episodes / series.total_episodes * 100) if series.total_episodes > 0 else 0 }}%">
+                                    {{ "%.0f"|format(series.watched_episodes / series.total_episodes * 100) if series.total_episodes > 0 else 0 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ series.watched_episodes }}/{{ series.total_episodes }}</td>
+                        <td>
+                            <div class="links">
+                                {% if series.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ series.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if series.sonarr_title_slug and report.sonarr_url %}
+                                <a href="{{ report.sonarr_url }}/series/{{ series.sonarr_title_slug }}" target="_blank" class="link-button link-sonarr">Sonarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ series.tvdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if series.in_sonarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No series partially watched by all users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>📺 Series Partially Watched by Some Users</h2>
+            {% if report.series_partially_watched_by_some %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Watched By</th>
+                        <th>Progress</th>
+                        <th>Episodes</th>
+                        <th>Links</th>
+                        <th>TVDB ID</th>
+                        <th>In Sonarr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for series in report.series_partially_watched_by_some %}
+                    <tr class="content-row" data-users="{{ series.watched_by_users|join(',') }}">
+                        <td>{{ series.title }}</td>
+                        <td>{{ series.year or 'N/A' }}</td>
+                        <td>
+                            <div class="user-badges">
+                                {% for user in series.watched_by_users %}
+                                <span class="user-badge">{{ user }}</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (series.watched_episodes / series.total_episodes * 100) if series.total_episodes > 0 else 0 }}%">
+                                    {{ "%.0f"|format(series.watched_episodes / series.total_episodes * 100) if series.total_episodes > 0 else 0 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ series.watched_episodes }}/{{ series.total_episodes }}</td>
+                        <td>
+                            <div class="links">
+                                {% if series.jellyfin_id and report.jellyfin_url %}
+                                <a href="{{ report.jellyfin_url }}/web/index.html#!/details?id={{ series.jellyfin_id }}" target="_blank" class="link-button link-jellyfin">Jellyfin</a>
+                                {% endif %}
+                                {% if series.sonarr_title_slug and report.sonarr_url %}
+                                <a href="{{ report.sonarr_url }}/series/{{ series.sonarr_title_slug }}" target="_blank" class="link-button link-sonarr">Sonarr</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ series.tvdb_id or 'N/A' }}</td>
+                        <td>
+                            {% if series.in_sonarr %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No series partially watched by some users</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>👥 Per-User Details</h2>
+            {% for user_data in report.users %}
+            <div class="user-section">
+                <h3>{{ user_data.username }}</h3>
+                <p><strong>Movies watched:</strong> {{ user_data.watched_movies|length }}</p>
+                <p><strong>Series watched:</strong> {{ user_data.watched_series|length }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="section">
+            <div class="empty-state">
+                <h2>No report available</h2>
+                <p>Run the application to generate a report</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if report %}
+    <script>
+        // Chart.js visualization
+        const ctx = document.getElementById('contentChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Movies (All)',
+                    'Movies (Some)',
+                    'Series Full (All)',
+                    'Series Full (Some)',
+                    'Series Partial (All)',
+                    'Series Partial (Some)'
+                ],
+                datasets: [{
+                    label: 'Content Count',
+                    data: [
+                        {{ report.movies_watched_by_all|length }},
+                        {{ report.movies_watched_by_some|length }},
+                        {{ report.series_fully_watched_by_all|length }},
+                        {{ report.series_fully_watched_by_some|length }},
+                        {{ report.series_partially_watched_by_all|length }},
+                        {{ report.series_partially_watched_by_some|length }}
+                    ],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(102, 126, 234, 0.5)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(118, 75, 162, 0.5)',
+                        'rgba(255, 159, 64, 0.8)',
+                        'rgba(255, 159, 64, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(118, 75, 162, 1)',
+                        'rgba(118, 75, 162, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // User list for filtering
+        const allUsers = {{ report.users|map(attribute='username')|list|tojson }};
+
+        // Filtering functionality
+        function filterContent() {
+            const selectedUser = document.getElementById('userFilter').value;
+            const watchedFilter = document.getElementById('watchedFilter').value;
+            const allRows = document.querySelectorAll('.content-row');
+
+            allRows.forEach(row => {
+                const rowUsers = row.dataset.users ? row.dataset.users.split(',') : [];
+                let showRow = true;
+
+                // Apply user filter
+                if (selectedUser) {
+                    if (watchedFilter === 'watched') {
+                        // Show only if selected user has watched
+                        showRow = rowUsers.includes(selectedUser);
+                    } else if (watchedFilter === 'not-watched') {
+                        // Show only if selected user has NOT watched
+                        showRow = !rowUsers.includes(selectedUser);
+                    } else {
+                        // Show all content related to the selected user
+                        showRow = rowUsers.includes(selectedUser);
+                    }
+                } else if (watchedFilter === 'watched' || watchedFilter === 'not-watched') {
+                    // If no user selected but status is selected, don't filter
+                    showRow = true;
+                }
+
+                if (showRow) {
+                    row.classList.remove('hidden-row');
+                } else {
+                    row.classList.add('hidden-row');
+                }
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('userFilter').value = '';
+            document.getElementById('watchedFilter').value = '';
+            filterContent();
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

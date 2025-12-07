@@ -1,0 +1,11 @@
+# Service URLs Configuration
+# Copy this file to config.yaml and update with your actual URLs
+
+jellyfin:
+  url: "https://jellyfin.home.hacky.software"
+
+sonarr:
+  url: "https://sonarr.home.hacky.software"
+
+radarr:
+  url: "https://radarr.home.hacky.software"
